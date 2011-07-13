@@ -3,4 +3,5 @@
     <string name="hello">Hello World, DiscoveryActivity!</string>
     <string name="app_name">Perception Search</string>
     <string name="label_discovery_activity">Eye Tracker Discovery</string>
+    <string name="previewActivityLabel">Preview</string>
 </resources>

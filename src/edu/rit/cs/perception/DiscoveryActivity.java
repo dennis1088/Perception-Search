@@ -9,6 +9,7 @@ import javax.jmdns.ServiceInfo;
 import javax.jmdns.ServiceListener;
 
 import android.app.ListActivity;
+import android.app.ProgressDialog;
 import android.net.wifi.WifiManager;
 import android.net.wifi.WifiManager.MulticastLock;
 import android.os.Bundle;
@@ -30,6 +31,8 @@ public class DiscoveryActivity extends ListActivity {
 	private MulticastLock mLock;
 	private ServiceListener listener;
 	private Handler handler = new Handler();
+	private boolean foundService = false;
+	private ProgressDialog pd;
 	
     /** Called when the activity is first created. */
     @Override
@@ -47,8 +50,6 @@ public class DiscoveryActivity extends ListActivity {
           @SuppressWarnings("deprecation")
 		public void onItemClick(AdapterView<?> parent, View view,
               int position, long id) {
-            // When clicked, show a toast with the TextView text
-            //Toast.makeText(getApplicationContext(), ((TextView) view).getText(),Toast.LENGTH_SHORT).show();
             ServiceInfo serviceInfo = jmdns.getServiceInfo(LIVECAP_SERVICE_TYPE, 
             		(String)((TextView) view).getText());
             StringBuilder builder = new StringBuilder(2048);
@@ -68,6 +69,7 @@ public class DiscoveryActivity extends ListActivity {
         	
         }, DELAY);
         
+        pd = ProgressDialog.show(DiscoveryActivity.this, "", "Looking for Eye Trackers");
     }
 
 	private void setUp() {
@@ -86,7 +88,6 @@ public class DiscoveryActivity extends ListActivity {
 
 			@Override
 			public void serviceAdded(ServiceEvent event) {
-				//jmdns.requestServiceInfo(event.getType(), event.getName(), 1);
 				final String name = event.getName();
 				handler.postDelayed(new Runnable() {
 
@@ -94,6 +95,10 @@ public class DiscoveryActivity extends ListActivity {
 					@Override
 					public void run() {
 						((ArrayAdapter<String>)getListAdapter()).add(name);
+						if(!foundService) {
+							foundService = true;
+							pd.dismiss();
+						}
 					}
 					
 				}, 1);
@@ -115,7 +120,7 @@ public class DiscoveryActivity extends ListActivity {
 
 			@Override
 			public void serviceResolved(ServiceEvent event) {
-				//notifyUser("Service resolved: " + event.getInfo().getQualifiedName() + " port:" + event.getInfo().getPort());
+				
 			}
 			
 		});
