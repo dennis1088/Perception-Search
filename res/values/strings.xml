@@ -4,4 +4,5 @@
     <string name="app_name">Perception Search</string>
     <string name="label_discovery_activity">Eye Tracker Discovery</string>
     <string name="previewActivityLabel">Preview</string>
+    <string name="togglePreviewText">Stream</string>
 </resources>
