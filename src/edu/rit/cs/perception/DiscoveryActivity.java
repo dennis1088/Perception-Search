@@ -1,6 +1,8 @@
 package edu.rit.cs.perception;
 
 import java.io.IOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 
 import javax.jmdns.JmDNS;
@@ -9,146 +11,139 @@ import javax.jmdns.ServiceInfo;
 import javax.jmdns.ServiceListener;
 
 import android.app.ListActivity;
-import android.app.ProgressDialog;
 import android.content.Intent;
 import android.net.wifi.WifiManager;
 import android.net.wifi.WifiManager.MulticastLock;
 import android.os.Bundle;
-import android.os.Handler;
 import android.view.View;
+import android.view.Window;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 
-public class DiscoveryActivity extends ListActivity {
+public class DiscoveryActivity extends ListActivity implements ServiceListener,
+		OnItemClickListener {
 
 	public final static String LIVECAP_SERVICE_TYPE = "_pslivecap._tcp.local.";
-	public final static int DELAY = 1000;
 
-	private JmDNS jmdns = null;
+	private JmDNS mJmdns;
 	private MulticastLock mLock;
-	private ServiceListener listener;
-	private Handler handler = new Handler();
-	private boolean foundService = false;
-	private ProgressDialog pd;
-
-	/** Called when the activity is first created. */
+	private ArrayAdapter<String> mListAdapter;
+	private ListView mListView;
+	
 	@Override
-	public void onCreate(Bundle savedInstanceState) {
+	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
+		
+		mListAdapter = new ArrayAdapter<String>(this,
+				android.R.layout.simple_list_item_1, new ArrayList<String>());
+		setListAdapter(mListAdapter);
 
-		setListAdapter(new ArrayAdapter<String>(this,
-				android.R.layout.simple_list_item_1, new ArrayList<String>()));
-
-		ListView lv = getListView();
-		lv.setTextFilterEnabled(true);
-
-		lv.setOnItemClickListener(new OnItemClickListener() {
-			public void onItemClick(AdapterView<?> parent, View view,
-					int position, long id) {
-				ServiceInfo serviceInfo = jmdns.getServiceInfo(
-						LIVECAP_SERVICE_TYPE,
-						(String) ((TextView) view).getText());
-				String serviceName = serviceInfo.getName();
-				String serviceAddress = serviceInfo.getHostAddresses()[0];
-				int servicePort = serviceInfo.getPort();
-
-				Intent myIntent = new Intent(DiscoveryActivity.this,
-						PreviewActivity.class);
-				myIntent.putExtra("name", serviceName);
-				myIntent.putExtra("address", serviceAddress);
-				myIntent.putExtra("port", servicePort);
-
-				startActivity(myIntent);
-			}
-		});
-
-		handler.postDelayed(new Runnable() {
-
-			@Override
-			public void run() {
-				setUp();
-			}
-
-		}, DELAY);
-
-		pd = ProgressDialog.show(DiscoveryActivity.this, "",
-				"Looking for Eye Trackers");
-	}
-
-	private void setUp() {
-		WifiManager wifi = (WifiManager) getSystemService(android.content.Context.WIFI_SERVICE);
-		mLock = wifi.createMulticastLock("mylockthereturn");
-		mLock.setReferenceCounted(true);
-		mLock.acquire();
+		mListView = getListView();
+		mListView.setTextFilterEnabled(true);
+		mListView.setOnItemClickListener(this);
 
 		try {
-			jmdns = JmDNS.create();
+			mJmdns = JmDNS.create();
+		} catch (UnknownHostException e) {
+			e.printStackTrace();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 
-		jmdns.addServiceListener(LIVECAP_SERVICE_TYPE, new ServiceListener() {
+		setProgressBarIndeterminateVisibility(true);
+	}
+
+	@Override
+	protected void onStart() {
+		super.onStart();
+		WifiManager wifi = (WifiManager) getSystemService(android.content.Context.WIFI_SERVICE);
+		mLock = wifi.createMulticastLock("mylockthereturn");
+		mLock.setReferenceCounted(true);
+		mLock.acquire();
+		
+		new Thread(new Runnable(){
 
 			@Override
-			public void serviceAdded(ServiceEvent event) {
-				final String name = event.getName();
-				handler.postDelayed(new Runnable() {
-
-					@SuppressWarnings("unchecked")
-					@Override
-					public void run() {
-						((ArrayAdapter<String>) getListAdapter()).add(name);
-						if (!foundService) {
-							foundService = true;
-							pd.dismiss();
-						}
-					}
-
-				}, 1);
+			public void run() {
+				startServiceListening();
 			}
+			
+		}).start();
+	}
+
+	@Override
+	protected void onStop() {
+		super.onStop();
+		mLock.release();
+		mJmdns.removeServiceListener(LIVECAP_SERVICE_TYPE, this);
+		mListAdapter.clear();
+	}
+
+	@Override
+	protected void onDestroy() {
+		super.onDestroy();
+		
+		try {
+			mJmdns.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	@Override
+	public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
+		String name = (String) ((TextView) v).getText();
+		ServiceInfo serviceInfo = mJmdns.getServiceInfo(LIVECAP_SERVICE_TYPE,
+				name);
+		String serviceName = serviceInfo.getName();
+		String serviceAddress = serviceInfo.getHostAddresses()[0];
+		int servicePort = serviceInfo.getPort();
+
+		Intent startPreview = new Intent(this, PreviewActivity.class);
+		startPreview.putExtra("name", serviceName);
+		startPreview.putExtra("address", serviceAddress);
+		startPreview.putExtra("port", servicePort);
+
+		startActivity(startPreview);
+	}
+
+	@Override
+	public void serviceAdded(ServiceEvent event) {
+		final String name = event.getName();
+		runOnUiThread(new Runnable() {
 
 			@Override
-			public void serviceRemoved(ServiceEvent event) {
-				final String name = event.getName();
-				handler.postDelayed(new Runnable() {
-
-					@SuppressWarnings("unchecked")
-					@Override
-					public void run() {
-						((ArrayAdapter<String>) getListAdapter()).remove(name);
-					}
-
-				}, 1);
-			}
-
-			@Override
-			public void serviceResolved(ServiceEvent event) {
-
+			public void run() {
+				mListAdapter.add(name);
 			}
 
 		});
 	}
 
 	@Override
-	protected void onStop() {
-		if (jmdns != null) {
-			if (listener != null) {
-				jmdns.removeServiceListener(LIVECAP_SERVICE_TYPE, listener);
-				listener = null;
-			}
-			try {
-				jmdns.close();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-			jmdns = null;
-		}
+	public void serviceRemoved(ServiceEvent event) {
+		final String name = event.getName();
+		runOnUiThread(new Runnable() {
 
-		mLock.release();
-		super.onStop();
+			@Override
+			public void run() {
+				mListAdapter.remove(name);
+			}
+
+		});
+	}
+
+	@Override
+	public void serviceResolved(ServiceEvent event) {
+
+	}
+	
+	private void startServiceListening() {
+		mJmdns.addServiceListener(LIVECAP_SERVICE_TYPE, this);
 	}
 
 }
