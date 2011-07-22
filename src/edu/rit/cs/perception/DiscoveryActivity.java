@@ -13,6 +13,7 @@ import android.content.Intent;
 import android.net.wifi.WifiManager;
 import android.net.wifi.WifiManager.MulticastLock;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.view.Window;
 import android.widget.AdapterView;
@@ -83,7 +84,7 @@ public class DiscoveryActivity extends ListActivity implements ServiceListener,
 		try {
 			mJmdns = JmDNS.create();
 		} catch (IOException e) {
-			e.printStackTrace();
+			Log.e("Discovery Error", "Error creating the JmDNS object.");
 		}
 
 		startServiceListening();
@@ -197,7 +198,7 @@ public class DiscoveryActivity extends ListActivity implements ServiceListener,
 		try {
 			mJmdns.close();
 		} catch (IOException e) {
-			e.printStackTrace();
+			Log.e("Discovery Error", "Error closing the JmDNS object.");
 		}
 
 		mLock.release();

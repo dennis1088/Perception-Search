@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout
   xmlns:android="http://schemas.android.com/apk/res/android"
-  android:weightSum="1" android:orientation="vertical" android:padding="10dp" android:layout_height="wrap_content" android:layout_width="wrap_content">
-    <TextView android:layout_width="wrap_content" android:text="TextView" android:layout_height="wrap_content" android:textAppearance="?android:attr/textAppearanceLarge" android:id="@+id/serverName"></TextView>
-    <ImageView android:layout_height="wrap_content" android:layout_width="wrap_content" android:src="@drawable/previewholder2" android:id="@+id/previewImage"></ImageView>
+  android:weightSum="1" android:orientation="vertical" android:layout_height="wrap_content" android:layout_width="match_parent" android:padding="10dp">
+    <TextView android:text="TextView" android:layout_height="wrap_content" android:textAppearance="?android:attr/textAppearanceLarge" android:id="@+id/serverName" android:layout_width="wrap_content"></TextView>
+    <ImageView android:src="@drawable/previewholder3" android:adjustViewBounds="true" android:layout_width="match_parent" android:id="@+id/previewImage" android:layout_height="wrap_content" android:paddingTop="10dp" android:paddingBottom="10dp"></ImageView>
     <ToggleButton android:id="@+id/toggleButton1" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/togglePreviewText" android:textOff="@string/togglePreviewText" android:textOn="@string/togglePreviewText"></ToggleButton>
     
 </LinearLayout>
