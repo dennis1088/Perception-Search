@@ -2,7 +2,7 @@
 
 ## Description ##
 
-This project is an android application that will preform google searched of things viewed by a user.
+This project is an android application that will perform google searched of things viewed by a user.
 
 ## How to Run ##
 
