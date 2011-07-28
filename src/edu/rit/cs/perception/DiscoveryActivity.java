@@ -33,6 +33,7 @@ public class DiscoveryActivity extends ListActivity implements ServiceListener,
 	private MulticastLock mLock;
 	private ArrayAdapter<String> mListAdapter;
 	private ListView mListView;
+	//private Handler handler = new Handler();
 
 	/**
 	 * This method is called when the activity is created. Usually global
@@ -81,32 +82,25 @@ public class DiscoveryActivity extends ListActivity implements ServiceListener,
 		mLock.acquire();
 
 		// Must create the Jmdns object after acquiring lock
+		// Adding this class as a service listener
 		try {
 			mJmdns = JmDNS.create();
+			mJmdns.addServiceListener(LIVECAP_SERVICE_TYPE, this);
 		} catch (IOException e) {
-			Log.e("Discovery Error", "Error creating the JmDNS object.");
+			Log.e("Perception Search", "Error creating the JmDNS object.");
 		}
-
-		startServiceListening();
-	}
-
-	/**
-	 * This adds this activity as a listener to services.
-	 */
-	private void startServiceListening() {
-		// Must add a listener to services on the network
-		mJmdns.addServiceListener(LIVECAP_SERVICE_TYPE, this);
 	}
 
 	/**
 	 * This method is called when a service has been found. This method adds the
 	 * name of the service to the list. It uses a utility called runOnUiThread()
-	 * in order to preform a update to the GUI this is recommended so that the
+	 * in order to perform a update to the GUI this is recommended so that the
 	 * operation does not lock up the GUI thread.
 	 */
 	@Override
 	public void serviceAdded(ServiceEvent event) {
 		final String name = event.getName();
+		Log.i("Perception Search", "Service Added: "+ name);
 		runOnUiThread(new Runnable() {
 
 			@Override
@@ -125,6 +119,7 @@ public class DiscoveryActivity extends ListActivity implements ServiceListener,
 	@Override
 	public void serviceRemoved(ServiceEvent event) {
 		final String name = event.getName();
+		Log.i("Perception Search", "Service Removed: "+ name);
 		runOnUiThread(new Runnable() {
 
 			@Override
@@ -198,7 +193,6 @@ public class DiscoveryActivity extends ListActivity implements ServiceListener,
 		try {
 			mJmdns.close();
 		} catch (IOException e) {
-			Log.e("Discovery Error", "Error closing the JmDNS object.");
 		}
 
 		mLock.release();

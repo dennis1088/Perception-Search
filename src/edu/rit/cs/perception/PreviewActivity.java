@@ -43,6 +43,9 @@ public class PreviewActivity extends Activity implements OnClickListener {
 					int sizeOfData = mIn.readInt();
 					int typeOfData = mIn.readInt();
 
+					Log.i("Perception Search", "Read header with dataSize: "
+							+ sizeOfData + ", dataType:" + typeOfData);
+
 					final byte[] data = new byte[sizeOfData];
 
 					int bytesRead = 0;
@@ -54,7 +57,7 @@ public class PreviewActivity extends Activity implements OnClickListener {
 					switch (typeOfData) {
 					case COMMAND_TYPE:
 						String command = new String(data);
-						Log.i("Preview Activity", "Command recieved: "
+						Log.i("Perception Search", "Command recieved: "
 								+ command);
 						break;
 					case EYE_IMAGE_TYPE:
@@ -72,12 +75,13 @@ public class PreviewActivity extends Activity implements OnClickListener {
 						});
 						break;
 					default:
-						Log.i("Preview Activity",
+						Log.i("Perception Search",
 								"Recived data of unknown type: " + typeOfData);
 						break;
 					}
 				} catch (IOException e) {
-					Log.e("Preview Activity", "Could not read header and data.");
+					Log.e("Perception Search",
+							"Could not read header and data.");
 				}
 
 			}
@@ -132,9 +136,9 @@ public class PreviewActivity extends Activity implements OnClickListener {
 			mIn = new LEDataInputStream(mServerSocket.getInputStream());
 			mOut = new LEDataOutputStream(mServerSocket.getOutputStream());
 		} catch (UnknownHostException e) {
-			Log.e("Preview Activity", "Could not find host.");
+			Log.e("Perception Search", "Could not find host.");
 		} catch (IOException e) {
-			Log.e("Preview Activity", "Could not create connection with host.");
+			Log.e("Perception Search", "Could not create connection with host.");
 		}
 
 	}
@@ -161,7 +165,7 @@ public class PreviewActivity extends Activity implements OnClickListener {
 			mOut.writeInt(COMMAND_TYPE);
 			mOut.writeBytes(command);
 		} catch (IOException e) {
-			Log.e("Preview Activity", "Could not send command: " + command);
+			Log.e("Perception Search", "Could not send command: " + command);
 		}
 	}
 
@@ -187,7 +191,7 @@ public class PreviewActivity extends Activity implements OnClickListener {
 			mIn.close();
 			mServerSocket.close();
 		} catch (IOException e) {
-			Log.e("Preview Activity", "Could not close connection.");
+			Log.e("Perception Search", "Could not close connection.");
 		}
 	}
 
