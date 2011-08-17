@@ -26,7 +26,7 @@ import android.widget.TextView;
 public class DiscoveryActivity extends ListActivity implements ServiceListener,
 		OnItemClickListener {
 
-	public final static String LIVECAP_SERVICE_TYPE = "_pslivecap._tcp.local.";
+	public final static String LIVECAP_SERVICE_TYPE = "_http._tcp.local.";
 	public final static String SEARCH_PROGRESS_MESSAGE = "Searching for Trackers...";
 
 	private JmDNS mJmdns;
