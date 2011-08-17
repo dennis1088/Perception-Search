@@ -2,6 +2,6 @@
 <LinearLayout
   xmlns:android="http://schemas.android.com/apk/res/android"
   android:weightSum="1" android:orientation="vertical" android:layout_width="match_parent" android:padding="10dp" android:layout_height="match_parent">
-    <SurfaceView android:id="@+id/surfaceView1" android:layout_width="wrap_content" android:layout_height="wrap_content"></SurfaceView>
+    <edu.rit.cs.perception.CameraView android:id="@+id/cameraView1" android:layout_width="match_parent" android:layout_height="match_parent"></edu.rit.cs.perception.CameraView>
     
 </LinearLayout>
